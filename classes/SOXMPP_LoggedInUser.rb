@@ -65,7 +65,8 @@ class SOXMPP_LoggedInUser < SOXMPP_ChatUser
     
     @rooms[soxmpp_room.room_id] = soxmpp_room
     
-    begin_polling
+    # Disabled because of #11: Moving poll function to the bridge
+    # begin_polling
   end
   
   def begin_polling

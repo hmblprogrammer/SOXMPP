@@ -26,7 +26,7 @@
 # Overflow chat system via XMPP/Jabber/Google Messaging.
 # 
 # This script is a very, very, very early alpha. It is by no means complete.
-# Please see the Trac wili for more information about current progress.
+# Please see the Trac wiki for more information about current progress.
 # 
 # Currently thete is *no* write support, users don't work, there's a lot of bugs
 # and only two rooms work (because they're hard-coded in): The tavern and XMPP

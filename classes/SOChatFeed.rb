@@ -54,7 +54,7 @@ class SOChatFeed
           puts "DEBUG: found an event: #{e.inspect}"
           if e["event_type"] == 1
             puts "DEBUG: found a message!"
-            messages[rid].push [e['user_name'],e['content']]
+            messages[rid].push [e['user_name'],CGI.unescapeHTML( e['content'] )]
           end
         end
       end

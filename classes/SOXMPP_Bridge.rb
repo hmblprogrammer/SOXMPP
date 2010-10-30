@@ -12,7 +12,7 @@
 class SOChat_XMPP_Bridge
   def initialize(jid, secret, addr, port=5275)
     # Initialize private variables
-    @rooms = {}
+    @rooms_by_server = {}
     
     # Create our component. This does the bulk of the work, it connects to the
     # XMPP server and is the vehiclue through which we provide all functionality
@@ -35,6 +35,13 @@ class SOChat_XMPP_Bridge
       handle_message(msg)
     }
     
+    @feeds = {}
+    
+    @poll_interval = 2
+    @poll_thread = nil
+    
+    begin_polling
+    
     puts "Bridge component up and running"
   end
   
@@ -43,13 +50,20 @@ class SOChat_XMPP_Bridge
     print "Adding XMPP room \"#{name}\" connected to room ID #{room_id} on #{server}...\n"
     begin
       room = SOXMPP_Room.new(self, name, server, room_id)
+      
+      if @feeds[server].nil?
+        @feeds[server] =SOChatFeed.new(server)
+      end
+      
       #room = SOXMPP_Room.new(name, server, room_id)
     rescue Exception => e
       puts " #{e.to_s}"
       exit
     end
     #@rooms[room.node] = room
-    @rooms[name] = room
+    
+    @rooms_by_server[server] = {} if @rooms_by_server[server].nil?
+    @rooms_by_server[server][name] = room
     puts " #{room.iname}"
   end
   
@@ -66,7 +80,45 @@ class SOChat_XMPP_Bridge
     @rooms[room.node] = room
     puts " #{room.iname}"
   end
-
+  
+  def begin_polling
+    if @poll_thread.nil?
+      puts "Creating a new poller for #{self}"
+      
+      @poll_thread = Thread.new do 
+        while true
+          poll
+          sleep @poll_interval
+        end
+      end
+    end
+  end
+  
+  def poll
+    puts "poll called for #{self}"
+    
+    @rooms_by_server.each do |server,rooms|
+      messages = @feeds[server].get_new_messages_for_rooms rooms.values
+      
+      #puts "DEBUG: messages: #{messages.inspect}"
+      
+      rooms.each do |room_name,room|
+        rid = "r"+"#{room.room_id}"
+        #puts "DEBUG: Looing for messages for #{room_name} (ID #{rid})"
+        if !messages[rid].nil?
+          #puts "DEBUG: Found messages for room #{room_name}"
+          messages[rid].each {|message| room.send_message(message[0], message[1]) }
+        end
+      end
+    end
+  end
+  
+  def find_room_by_name(room_name)
+    @rooms_by_server.each do |server,rooms|
+      return rooms[room_name] if !rooms[room_name].nil?
+    end
+  end
+  
   def send(roomnode, roomresource, stanza)
     #puts "Bridge sending node=#{roomnode}, roomresource=#{roomresource}, stanza=#{stanza}"
     stanza.from = Jabber::JID.new(roomnode, @component.jid.domain, roomresource)
@@ -107,7 +159,7 @@ class SOChat_XMPP_Bridge
       answer.query.add(Jabber::Discovery::Feature.new(Jabber::Discovery::IqQueryDiscoInfo.new.namespace))
       answer.query.add(Jabber::Discovery::Feature.new(Jabber::Discovery::IqQueryDiscoItems.new.namespace))
     else
-      room = @rooms[iq.to.node]
+      room = find_room_by_name iq.to.node
       if room.nil?
         answer.type = :error
         answer.query.add(Jabber::ErrorResponse.new('item-not-found', 'The room you are trying to reach is currently unavailable.'))
@@ -136,11 +188,13 @@ class SOChat_XMPP_Bridge
     answer = iq.answer
     answer.type = :result
     if iq.to.node == nil
-      @rooms.each { |node,room|
-        domain = @component.jid.domain
-        room_name = room.iname
-        answer.query.add(Jabber::Discovery::Item.new(Jabber::JID.new(node, domain), room_name))
-      }
+      @rooms_by_server.each do |server,rooms|
+       rooms.each do |node,room|
+          domain = @component.jid.domain
+          room_name = room.iname
+          answer.query.add(Jabber::Discovery::Item.new(Jabber::JID.new(node, domain), room_name))
+        end
+      end
     end
     @component.send(answer)
   end
@@ -151,7 +205,7 @@ class SOChat_XMPP_Bridge
   def handle_presence(pres)
     puts "presence: from #{pres.from} type #{pres.type} to #{pres.to}"
 
-    room = @rooms[pres.to.node]
+    room = find_room_by_name pres.to.node
     if room.nil?
       answer = pres.answer
       answer.type = :error
@@ -170,7 +224,7 @@ class SOChat_XMPP_Bridge
   def handle_message(msg)
     puts "message: from #{msg.from} type #{msg.type} to #{msg.to}: #{msg.body.inspect}"
 
-    room = @rooms[msg.to.node]
+    room = find_room_by_name msg.to.node
     if room.nil?
       answer = msg.answer
       answer.type = :error

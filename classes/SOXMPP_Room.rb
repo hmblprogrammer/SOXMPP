@@ -24,6 +24,23 @@ class SOXMPP_Room < REXML::Element
     @mySORoom = SOChatRoom.new(@server,@room_id)
   end
   
+  def send_message(fromresource, text, subject=nil)
+    puts "Sending message to room #{@name}: #{text}"
+        
+    each_element('soxmppobject') { |t|
+      # Broadcast message to room
+      unless t.presence.nil?
+        msg = Jabber::Message.new(t.jid, text)
+        msg.type = :groupchat
+        msg.subject = subject unless subject.nil?
+        
+        puts "Sending message to user #{t.jid}: #{msg}"
+        
+        send(fromresource, msg)
+      end
+    }
+  end
+  
   def send(resource, stanza)
     # Avoid sending to things without JID
     if stanza.to != nil

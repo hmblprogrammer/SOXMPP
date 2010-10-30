@@ -18,28 +18,28 @@ class SOChatFeed
   end
   
   def get_new_messages_for_rooms(room_list)
-    #puts "get_new_messages_for_rooms(#{room_list}) called"
+    puts "DEBUG: get_new_messages_for_rooms(#{room_list}) called"
     room_ids = room_list.collect {|r| r.room_id}
-    #puts "room_ids: #{room_ids}"
+    puts "DEBUG: room_ids: #{room_ids}"
     get_new_messages_for_room_ids(room_ids)
   end
   
   def get_new_messages_for_room_ids(rooms)
      
-    puts "get_new_messages_for_room_ids(#{rooms}) called"
+    puts "DEBUG: get_new_messages_for_room_ids(#{rooms}) called"
     
     request = {}
     rooms.each do |r|
       request["r"+"#{r}"] = @last_update
     end
     
-    puts "sending request: #{request.inspect}"
+    puts "DEBUG: sending request: #{request.inspect}"
     
     
     res = Net::HTTP.post_form(URI.parse("http://#{@server}/events"),request)
     data = JSON.parse(res.body)
     
-    puts "received data: #{data.inspect}"
+    puts "DEBUG: received data: #{data.inspect}"
     
     messages = {}
     
@@ -49,11 +49,11 @@ class SOChatFeed
       messages[rid] = []
       
       if rdata["e"]
-        puts "Found events for room #{rid}"
+        puts "DEBUG: Found events for room #{rid}"
         rdata["e"].each do |e|
-          puts "found an event: #{e.inspect}"
+          puts "DEBUG: found an event: #{e.inspect}"
           if e["event_type"] == 1
-            puts "found a message!"
+            puts "DEBUG: found a message!"
             messages[rid].push [e['user_name'],e['content']]
           end
         end

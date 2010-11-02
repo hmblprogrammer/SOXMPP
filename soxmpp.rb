@@ -50,6 +50,8 @@ require 'xmpp4r'
 require 'xmpp4r/discovery'
 require 'xmpp4r/muc/x/muc'
 
+require 'classes/SOChatEvents.rb'
+require 'classes/SOChatEventCollection.rb'
 require 'classes/SOChatFeed.rb'
 require 'classes/SOChatUser.rb'
 require 'classes/SOChatRoom.rb'

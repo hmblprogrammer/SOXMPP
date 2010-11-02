@@ -136,6 +136,15 @@ class SOXMPP_Room < REXML::Element
     puts "Room \"#{@name}\" handling #message: #{msg}"
   end
   
+  def handle_event the_event
+    puts "DEBUG: Room #{self} handling event: #{the_event}"
+    
+    case the_event
+      when SOChatMessage
+        send_message(the_event.from, the_event.body)
+    end
+  end
+  
   def add_to_room(user)
     each_element('soxmppobject') { |t|
       # Broadcast availability presence to enterer

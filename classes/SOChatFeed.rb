@@ -24,6 +24,52 @@ class SOChatFeed
     get_new_messages_for_room_ids(room_ids)
   end
   
+  def get_new_events_for_rooms(rooms)
+     
+    #puts "DEBUG: get_new_messages_for_room_ids(#{rooms}) called"
+    
+    request = {}
+    rooms.each do |room|
+      request["r"+"#{room.room_id}"] = @last_update
+    end
+    
+    #puts "DEBUG: sending request: #{request.inspect}"
+    
+    
+    res = Net::HTTP.post_form(URI.parse("http://#{@server}/events"),request)
+    data = JSON.parse(res.body)
+    
+    #puts "DEBUG: received data: #{data.inspect}"
+    
+    events = SOChatEventCollection.new
+    
+    rooms.each do |room|
+      rid = "r"+"#{room.room_id}"
+      if !data[rid].nil?
+        @last_update = data[rid]['t'] if data[rid]['t']
+        
+        if data[rid]["e"]
+          #puts "DEBUG: Found events for room #{rid}"
+          data[rid]["e"].each do |e|
+            #puts "DEBUG: found an event: #{e.inspect}"
+            case e["event_type"]
+              when 1
+                event = SOChatMessage.new(room,e['user_name'],CGI.unescapeHTML( e['content'] ))
+                event.server = @server
+                events.push event
+              when 2
+                event = SOChatMessageEdit.new(room,e['user_name'],CGI.unescapeHTML( e['content'] ))
+                event.server = @server
+                events.push event
+            end
+          end
+        end
+      end
+    end
+    
+    events
+  end
+  
   def get_new_messages_for_room_ids(rooms)
      
     puts "DEBUG: get_new_messages_for_room_ids(#{rooms}) called"
@@ -49,12 +95,13 @@ class SOChatFeed
       messages[rid] = []
       
       if rdata["e"]
-        puts "DEBUG: Found events for room #{rid}"
+        #puts "DEBUG: Found events for room #{rid}"
         rdata["e"].each do |e|
-          puts "DEBUG: found an event: #{e.inspect}"
+          #puts "DEBUG: found an event: #{e.inspect}"
           if e["event_type"] == 1
-            puts "DEBUG: found a message!"
-            messages[rid].push [e['user_name'],CGI.unescapeHTML( e['content'] )]
+            #puts "DEBUG: found a message!"
+            msg = CGI.unescapeHTML( e['content'] )
+            messages[rid].push [e['user_name'],msg]
           end
         end
       end

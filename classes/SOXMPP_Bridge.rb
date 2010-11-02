@@ -95,20 +95,16 @@ class SOChat_XMPP_Bridge
   end
   
   def poll
-    puts "poll called for #{self}"
+    #puts "poll called for #{self}"
     
     @rooms_by_server.each do |server,rooms|
-      messages = @feeds[server].get_new_messages_for_rooms rooms.values
+      events = @feeds[server].get_new_events_for_rooms rooms.values
       
-      #puts "DEBUG: messages: #{messages.inspect}"
+      #puts "DEBUG: events: #{events.inspect}"
       
       rooms.each do |room_name,room|
-        rid = "r"+"#{room.room_id}"
-        #puts "DEBUG: Looing for messages for #{room_name} (ID #{rid})"
-        if !messages[rid].nil?
-          #puts "DEBUG: Found messages for room #{room_name}"
-          messages[rid].each {|message| room.send_message(message[0], message[1]) }
-        end
+        #puts "DEBUG: poll: dispatching events for room #{room_name}: #{room}"
+        events.for_room(room).each {|event| room.handle_event event }
       end
     end
   end

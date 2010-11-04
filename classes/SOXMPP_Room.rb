@@ -24,7 +24,7 @@ class SOXMPP_Room < REXML::Element
     @mySORoom = SOChatRoom.new(@server,@room_id)
   end
   
-  def send_message(fromresource, text, subject=nil)
+  def send_message(fromresource, text, subject=nil, html=nil)
     puts "Sending message to room #{@name}: #{text}"
         
     each_element('soxmppobject') { |t|
@@ -33,6 +33,28 @@ class SOXMPP_Room < REXML::Element
         msg = Jabber::Message.new(t.jid, text)
         msg.type = :groupchat
         msg.subject = subject unless subject.nil?
+        
+        unless html.nil?
+          puts "This message contains HTML."
+          # Create the html part
+          h = REXML::Element::new("html")
+          h.add_namespace('http://jabber.org/protocol/xhtml-im')
+          
+          # The body part with the correct namespace
+          b = REXML::Element::new("body")
+          b.add_namespace('http://www.w3.org/1999/xhtml')
+          
+          # The html itself
+          txt = REXML::Text.new(html, false, nil, true, nil, %r/.^/ )
+          
+          # Add the html text to the body, and the body to the html element
+          b.add(txt)
+          h.add(b)
+          
+          puts "Adding the HTML to the message"
+          # Add the html element to the message
+          msg.add_element(h)
+        end
         
         puts "Sending message to user #{t.jid}: #{msg}"
         
@@ -140,8 +162,10 @@ class SOXMPP_Room < REXML::Element
     puts "DEBUG: Room #{self} handling event: #{the_event}"
     
     case the_event
+      when SOChatMessageEdit
+        send_message(the_event.from, "**EDIT**: #{the_event.body}", nil, "<span style='color:#999;'><b>Edit: </b></span><span>#{the_event.xhtml_body}</span>")
       when SOChatMessage
-        send_message(the_event.from, the_event.body)
+        send_message(the_event.from, the_event.body, nil, the_event.xhtml_body)
     end
   end
   

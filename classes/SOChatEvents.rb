@@ -28,10 +28,29 @@ end
 class SOChatMessage < SOChatRoomEvent
   attr_accessor :from, :body
   
-  def initialize(room=nil,from=nil,body=nil)
+  def initialize(room=nil,from=nil,body='')
     @room = room
     @from = from
-    @body = body
+   @html_body = @body = body
+  end
+  
+  def xhtml_body
+    html = @html_body
+    xml = Tidy.open(:show_warnings=>true) do |tidy|
+      tidy.options.output_xhtml = true
+      tidy.options.show_body_only = true
+      tidy.options.wrap = 0
+      tidy.options.char_encoding = 'utf8'
+      tidy.options.input_encoding = 'utf8'
+      xml = tidy.clean(html)
+      xml
+    end
+  end
+  
+  def encoded_body=(encoded_html)
+    @body = CGI.unescapeHTML(encoded_html)
+    
+    @html_body = encoded_html.gsub(/<code>(.*?)<\/code>/im,'<span class="code" style="font-family:Consolas,Menlo,Monaco,\'Lucida Console\',\'Liberation Mono\',\'DejaVu Sans Mono\',\'Bitstream Vera Sans Mono\',\'Courier New\',monospace,serif;white-space:pre-wrap;word-wrap:normal;">\1</span>')
   end
 end
 

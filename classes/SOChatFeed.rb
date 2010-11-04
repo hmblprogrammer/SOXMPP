@@ -54,11 +54,13 @@ class SOChatFeed
             #puts "DEBUG: found an event: #{e.inspect}"
             case e["event_type"]
               when 1
-                event = SOChatMessage.new(room,e['user_name'],CGI.unescapeHTML( e['content'] ))
+                event = SOChatMessage.new(room,e['user_name'])
+                event.encoded_body = e['content']
                 event.server = @server
                 events.push event
               when 2
-                event = SOChatMessageEdit.new(room,e['user_name'],CGI.unescapeHTML( e['content'] ))
+                event = SOChatMessageEdit.new(room,e['user_name'])
+                event.encoded_body = e['content']
                 event.server = @server
                 events.push event
             end

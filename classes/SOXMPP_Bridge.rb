@@ -20,7 +20,9 @@ class SOChat_XMPP_Bridge
     @component.connect(addr, port)
     @component.auth(secret)
     @component.on_exception { |e,|
-      puts "#{e.class}: #{e}\n#{e.backtrace.join("\n")}"
+      bt = "Backtrace N/A"
+      bt = e.backtrace.join("\n") unless e.nil?
+      puts "#{e.class}: #{e}\n#{bt}"
     }
     
     # Add callbacks, so when stuff happens on the XMPP server, methods of this
@@ -95,18 +97,23 @@ class SOChat_XMPP_Bridge
   end
   
   def poll
-    #puts "poll called for #{self}"
-    
-    @rooms_by_server.each do |server,rooms|
-      events = @feeds[server].get_new_events_for_rooms rooms.values
-      
-      #puts "DEBUG: events: #{events.inspect}"
-      
-      rooms.each do |room_name,room|
-        #puts "DEBUG: poll: dispatching events for room #{room_name}: #{room}"
-        events.for_room(room).each {|event| room.handle_event event }
+    begin
+      #puts "poll called for #{self}"
+      	 
+      @rooms_by_server.each do |server,rooms|
+        events = @feeds[server].get_new_events_for_rooms rooms.values
+         
+        #puts "DEBUG: events: #{events.inspect}"
+         
+        rooms.each do |room_name,room|
+          #puts "DEBUG: poll: dispatching events for room #{room_name}: #{room}"
+          events.for_room(room).each {|event| room.handle_event event }
+        end
       end
-    end
+     rescue => e
+       puts "\n\nEXCEPTION caught in poll method!\n"
+       p e.message unless e.nil?
+     end
   end
   
   def find_room_by_name(room_name)

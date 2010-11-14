@@ -24,6 +24,14 @@ class SOXMPP_Room < REXML::Element
     @mySORoom = SOChatRoom.new(@server,@room_id)
   end
   
+  def get_soxmpp_user_by_jid(jid)
+    user = nil
+    each_element('soxmppobject') { |t|
+      user = t if t.jid == jid
+    }
+    user
+  end
+  
   def send_message(fromresource, text, subject=nil, html=nil)
     puts "Sending message to room #{@name}: #{text}"
         
@@ -61,6 +69,40 @@ class SOXMPP_Room < REXML::Element
         send(fromresource, msg)
       end
     }
+  end
+  
+  def send_message_to_user(user,fromresource, text, subject=nil, html=nil)
+    puts "Sending message from room #{@name} to #{user}: #{text}"
+
+    msg = Jabber::Message.new(user, text)
+    msg.type = :groupchat
+    msg.subject = subject unless subject.nil?
+    
+    unless html.nil?
+      puts "This message contains HTML."
+      # Create the html part
+      h = REXML::Element::new("html")
+      h.add_namespace('http://jabber.org/protocol/xhtml-im')
+      
+      # The body part with the correct namespace
+      b = REXML::Element::new("body")
+      b.add_namespace('http://www.w3.org/1999/xhtml')
+      
+      # The html itself
+      txt = REXML::Text.new(html, false, nil, true, nil, %r/.^/ )
+      
+      # Add the html text to the body, and the body to the html element
+      b.add(txt)
+      h.add(b)
+      
+      puts "Adding the HTML to the message"
+      # Add the html element to the message
+      msg.add_element(h)
+    end
+    
+    puts "Sending message to user #{user}: #{msg}"
+    
+    send(fromresource, msg)
   end
   
   def send(resource, stanza)
@@ -155,7 +197,23 @@ class SOXMPP_Room < REXML::Element
   end
 
   def handle_message(msg)
-    puts "Room \"#{@name}\" handling #message: #{msg}"
+    puts "Room \"#{@name}\" handling message: #{msg}"
+    puts "message: from #{msg.from} type #{msg.type} to #{msg.to}: #{msg.body.inspect}"
+    
+    event = nil
+    
+    if msg.body =~ /\/.*/
+      #puts "DEBUG: Creating a new SOXMPPUserCommand"
+      event = SOXMPPUserCommand.new(msg)
+    else
+      #puts "DEBUG: Creating a new SOXMPPMessageToRoom"
+      event = SOXMPPMessageToRoom.new(msg)
+    end
+    
+    if !event.nil?
+      event.user = get_soxmpp_user_by_jid event.from
+      handle_event event
+    end
   end
   
   def handle_event the_event
@@ -166,6 +224,14 @@ class SOXMPP_Room < REXML::Element
         send_message(the_event.from, "**EDIT**: #{the_event.body}", nil, "<span style='color:#999;'><b>Edit: </b></span><span>#{the_event.xhtml_body}</span>")
       when SOChatMessage
         send_message(the_event.from, the_event.body, nil, the_event.xhtml_body)
+      when SOXMPPUserCommand
+        send_message_to_user(the_event.from, @name, the_event.execute)
+      when SOXMPPMessageToRoom
+        if the_event.user.authenticated?
+          the_event.post_to @mySORoom
+        else
+          send_message_to_user(the_event.from, @name, 'Error: You must be logged in to post messages.')
+        end
     end
   end
   

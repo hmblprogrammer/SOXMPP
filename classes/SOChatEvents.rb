@@ -14,6 +14,79 @@ class SOChatEvent
   end
 end
 
+# Base class for all events initiated by XMPP (e.g. messages sent via XMPP to the system)
+class SOXMPPEvent < SOChatEvent
+  attr_accessor :from
+  attr_accessor :to
+  
+  def initialize()
+    
+  end
+end
+
+# Base class for all messages sent via XMPP to the system via an XMPP user
+class SOXMPPMessage < SOXMPPEvent
+  attr_accessor :body
+  attr_accessor :user
+  
+  def initialize(xmpp_message)
+    @from = xmpp_message.from
+    @to = xmpp_message.to
+    @body = xmpp_message.body
+  end
+end
+
+# Class for all messages sent via XMPP to a room via an XMPP user
+class SOXMPPMessageToRoom < SOXMPPMessage
+  def post_to(room)
+    room.post_message(@body,@user.fkey,@user.cookie)
+  end
+end
+
+# Class for "slash commands" sent from a user, that is, messages starting with "/"
+class SOXMPPUserCommand < SOXMPPMessage
+  def execute
+    case @body
+      when "/help"
+        "Available topics are: help auth /fkey /cookie\n\nFor information on a topic, send: /help <topic>"
+      when "/help auth"
+        "To use this system, you must send your StackOverflow chat cookie and fkey to the system. To do this, use the /fkey and /cookie commands"
+      when "/help /fkey"
+        "Usage: /fkey <fkey>. Displays or sets your fkey, used for authentication. Send '/fkey' alone to display your current fkey, send '/fkey <something>' to set your fkey to <something>. You can obtain your fkey via the URL: javascript:alert(fkey().fkey)"
+      when "/help /cookie"
+        "Usage: /cookie <cookie>. Displays or sets your cookie, used for authentication. Send '/cookie' alone to display your current fkey, send '/cookie <something>' to set your cookie to <something>"
+      when /\/fkey( .*)?/
+        if $1.nil?
+          "Your fkey is \"#{@user.fkey}\""
+        else
+          @user.fkey = $1.strip
+          if @user.authenticated?
+            "fkey set to \"#{@user.fkey}\". You are now logged in and can send messages to the chat"
+          else
+            "fkey set to \"#{@user.fkey}\". You must also send your cookie with /cookie before you can chat"
+          end
+        end
+      when /\/cookie( .*)?/
+        if $1.nil?
+          "Your cookie is: \"#{@user.cookie}\""
+        else
+          if $1 == " chocolate chip"
+            "You get a chocolate chip cookie!"
+          else
+            @user.cookie = $1.strip
+            if @user.authenticated?
+              "cookie set to \"#{@user.cookie}\". You are now logged in and can send messages to the chat"
+            else
+              "cookie set to \"#{@user.cookie}\". You must also send your fkey with /fkey before you can chat"
+            end
+          end
+        end
+      else
+        "Unknown Command \"#{@body}\""
+    end
+  end
+end
+
 # Base class for all chat events tied to a room (for now, this is every event)
 class SOChatRoomEvent < SOChatEvent
   attr_accessor :room
@@ -51,6 +124,8 @@ class SOChatMessage < SOChatRoomEvent
     @body = CGI.unescapeHTML(encoded_html)
     
     @html_body = encoded_html.gsub(/<code>(.*?)<\/code>/im,'<span class="code" style="font-family:Consolas,Menlo,Monaco,\'Lucida Console\',\'Liberation Mono\',\'DejaVu Sans Mono\',\'Bitstream Vera Sans Mono\',\'Courier New\',monospace,serif;white-space:pre-wrap;word-wrap:normal;">\1</span>')
+    
+    @html_body.gsub!(/&nbsp;/,' ')
   end
 end
 

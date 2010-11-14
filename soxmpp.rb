@@ -42,6 +42,7 @@
 # copyrighted. The XMPP logo is released under an MIT license.
 
 require 'rubygems'
+require 'erb'
 require 'json'
 require 'net/http'
 require 'uri'

@@ -12,11 +12,17 @@
 # SOChatUser object which represents the cuat user on the Stack Overflow side.
 
 class SOXMPP_LoggedInUser < SOXMPP_ChatUser
+  attr_accessor :fkey
+  attr_accessor :cookie
+  
   def initialize(room, iname, jid, userid)
     super(room, iname, jid, userid)
     
     @feed = nil
     @rooms = {}
+    
+    @fkey = nil
+    @cookie = nil
     
     @poll_interval = 2
     
@@ -26,7 +32,11 @@ class SOXMPP_LoggedInUser < SOXMPP_ChatUser
   def jid
     attributes['jid'].nil? ? nil : Jabber::JID.new(attributes['jid'])
   end
-
+  
+  def authenticated?
+    !(@fkey.nil? or @cookie.nil?)
+  end
+  
   def see(place)
     print "ERROR: unimplemented see()"
   end

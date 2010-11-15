@@ -9,11 +9,17 @@
 # SOChatUser object which represents the cuat user on the Stack Overflow side.
 
 class SOXMPP_ChatUser < SOXMPP_Object
-  def initialize(room, iname, jid, userid)
+  attr_reader :sochatuser
+  
+  def initialize(room, iname, jid, sochatuser)
     super(room)
     attributes['name'] = iname
     attributes['jid'] = jid.to_s
     
-    @souser = SOChatUser.new(userid)
+    #puts "DEBUG: #{attributes.inspect}"
+    #
+    #attributes['presence'] = {:show => 'chat',  :status => ''}
+    
+    @sochatuser = sochatuser
   end
 end

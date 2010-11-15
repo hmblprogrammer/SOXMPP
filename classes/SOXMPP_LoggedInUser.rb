@@ -15,8 +15,8 @@ class SOXMPP_LoggedInUser < SOXMPP_ChatUser
   attr_accessor :fkey
   attr_accessor :cookie
   
-  def initialize(room, iname, jid, userid)
-    super(room, iname, jid, userid)
+  def initialize(room, iname, jid)
+    super(room, iname, jid, nil)
     
     @feed = nil
     @rooms = {}

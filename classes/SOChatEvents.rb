@@ -104,7 +104,7 @@ class SOChatMessage < SOChatRoomEvent
   def initialize(room=nil,from=nil,body='')
     @room = room
     @from = from
-   @html_body = @body = body
+    @html_body = @body = body
   end
   
   def xhtml_body
@@ -145,9 +145,7 @@ end
 
 # Class for event of a user joining a room
 class SOChatUserJoinRoom < SOChatUserEvent
-  attr_accessor :room
-  
-  def initialize(user=nil, room=nil)
+  def initialize(room=nil, user=nil)
     @user = user
     @room = room
   end
@@ -155,9 +153,7 @@ end
 
 # Class for event of a user leaving a room
 class SOChatUserLeaveRoom < SOChatUserEvent
-  attr_accessor :room
-  
-  def initialize(user=nil, room=nil)
+  def initialize(room=nil, user=nil)
     @user = user
     @room = room
   end

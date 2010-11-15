@@ -51,7 +51,7 @@ class SOChatFeed
         if data[rid]["e"]
           #puts "DEBUG: Found events for room #{rid}"
           data[rid]["e"].each do |e|
-            #puts "DEBUG: found an event: #{e.inspect}"
+            puts "DEBUG: found an event: #{e.inspect}"
             case e["event_type"]
               when 1
                 event = SOChatMessage.new(room,e['user_name'])
@@ -61,6 +61,16 @@ class SOChatFeed
               when 2
                 event = SOChatMessageEdit.new(room,e['user_name'])
                 event.encoded_body = e['content']
+                event.server = @server
+                events.push event
+              when 3
+                user = SOChatUser.new(e['user_id'], e['user_name'])
+                event = SOChatUserJoinRoom.new(room,user)
+                event.server = @server
+                events.push event
+              when 4
+                user = SOChatUser.new(e['user_id'], e['user_name'])
+                event = SOChatUserLeaveRoom.new(room,user)
                 event.server = @server
                 events.push event
             end

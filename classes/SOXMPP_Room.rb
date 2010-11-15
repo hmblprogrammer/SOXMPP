@@ -170,7 +170,7 @@ class SOXMPP_Room < REXML::Element
     # Add the valid user
     if user.nil?
       print "User is a new user, adding valid user.\n"
-      user = add(SOXMPP_LoggedInUser.new(self, pres.to.resource, pres.from, -1))
+      user = add(SOXMPP_LoggedInUser.new(self, pres.to.resource, pres.from))
       user.presence = pres
       #move_thing(player, attributes['start'])
       add_to_room(user)
@@ -232,6 +232,13 @@ class SOXMPP_Room < REXML::Element
         else
           send_message_to_user(the_event.from, @name, 'Error: You must be logged in to post messages.')
         end
+      when SOChatUserJoinRoom
+        puts "DEBUG: #{self} handling SOChatUserJoinRoom event #{the_event}"
+        user = self.add(SOXMPP_ChatUser.new(self, the_event.user.user_name, nil, the_event.user))
+        puts "DEBUG: added the user"
+        #add(user)
+        broadcast_enter(user)
+        puts "DEBUG: added the user to the room"
     end
   end
   
@@ -262,6 +269,21 @@ class SOXMPP_Room < REXML::Element
     user.send_message(nil, "Entering #{@name}", subject)
     user.send_message(nil, " ")
     user.join(self)
+  end
+  
+  def broadcast_enter(user)
+    puts "DEBUG: broadcast_enter called for #{user}"
+    puts "user presence is: #{user.presence}"
+    each_element('soxmppobject') { |t|
+      # Broadcast availability presence to all who are here
+      unless user.presence.nil?
+        puts "Broadcast availability presence of #{user} to all who are here"
+        pres = Jabber::Presence.import(user.presence)
+        pres.to = t.jid
+        puts "  send(#{t.iname}, #{pres})"
+        send(user.iname, pres)
+      end
+    }
   end
 end
 

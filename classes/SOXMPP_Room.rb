@@ -10,6 +10,7 @@
 
 class SOXMPP_Room < REXML::Element
   attr_reader :name
+  attr_reader :bridge
   attr_reader :server
   attr_reader :room_id
   
@@ -170,7 +171,7 @@ class SOXMPP_Room < REXML::Element
     # Add the valid user
     if user.nil?
       print "User is a new user, adding valid user.\n"
-      user = add(SOXMPP_LoggedInUser.new(self, pres.to.resource, pres.from))
+      user = add(@bridge.get_soxmpp_logged_in_user(pres.to.resource, pres.from))
       user.presence = pres
       #move_thing(player, attributes['start'])
       add_to_room(user)
@@ -238,7 +239,7 @@ class SOXMPP_Room < REXML::Element
         end
       when SOChatUserJoinRoom
         #puts "DEBUG: #{self} handling SOChatUserJoinRoom event #{the_event}"
-        user = self.add(SOXMPP_ChatUser.new(self, the_event.user.user_name, nil, the_event.user))
+        user = self.add(@bridge.get_soxmpp_chat_user(the_event.user))
         #puts "DEBUG: added the user"
         #add(user)
         broadcast_enter(user)

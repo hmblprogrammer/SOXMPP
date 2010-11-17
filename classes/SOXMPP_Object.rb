@@ -13,7 +13,6 @@
 class SOXMPP_Object < REXML::Element
   def initialize(room)
     super('soxmppobject')
-    @room = room
   end
 
   def add(xmlelement)

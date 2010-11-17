@@ -50,11 +50,11 @@ class SOXMPPUserCommand < SOXMPPMessage
       when "/help"
         "Available topics are: help auth /fkey /cookie\n\nFor information on a topic, send: /help <topic>"
       when "/help auth"
-        "To use this system, you must send your StackOverflow chat cookie and fkey to the system. To do this, use the /fkey and /cookie commands"
+        "To use this system, you must send your StackOverflow chat cookie and fkey to the system. To do this, use the /fkey and /cookie commands. **Please note:** if you give your session cookie to anyone else, you have given them all it takes to impersonate you on the main site. This is obviously necessary to allow the XMPP bridge to post messages as you, but for full disclosure you are sending these details to the XMPP server you are using so please make sure you trust the staff of sed server."
       when "/help /fkey"
         "Usage: /fkey <fkey>. Displays or sets your fkey, used for authentication. Send '/fkey' alone to display your current fkey, send '/fkey <something>' to set your fkey to <something>. You can obtain your fkey via the URL: javascript:alert(fkey().fkey)"
       when "/help /cookie"
-        "Usage: /cookie <cookie>. Displays or sets your cookie, used for authentication. Send '/cookie' alone to display your current fkey, send '/cookie <something>' to set your cookie to <something>"
+        "Usage: /cookie <cookie>. Displays or sets your cookie, used for authentication. Send '/cookie' alone to display your current fkey, send '/cookie <something>' to set your cookie to <something>. **Please note:** if you give your session cookie to anyone else, you have given them all it takes to impersonate you on the main site. This is obviously necessary to allow the XMPP bridge to post messages as you, but for full disclosure you are sending these details to the XMPP server you are using so please make sure you trust the staff of sed server."
       when /^\/fkey( .*)?/
         if $1.nil?
           "Your fkey is \"#{@user.fkey}\""

@@ -55,7 +55,7 @@ class SOXMPPUserCommand < SOXMPPMessage
         "Usage: /fkey <fkey>. Displays or sets your fkey, used for authentication. Send '/fkey' alone to display your current fkey, send '/fkey <something>' to set your fkey to <something>. You can obtain your fkey via the URL: javascript:alert(fkey().fkey)"
       when "/help /cookie"
         "Usage: /cookie <cookie>. Displays or sets your cookie, used for authentication. Send '/cookie' alone to display your current fkey, send '/cookie <something>' to set your cookie to <something>"
-      when /\/fkey( .*)?/
+      when /^\/fkey( .*)?/
         if $1.nil?
           "Your fkey is \"#{@user.fkey}\""
         else
@@ -66,7 +66,7 @@ class SOXMPPUserCommand < SOXMPPMessage
             "fkey set to \"#{@user.fkey}\". You must also send your cookie with /cookie before you can chat"
           end
         end
-      when /\/cookie( .*)?/
+      when /^\/cookie( .*)?/
         if $1.nil?
           "Your cookie is: \"#{@user.cookie}\""
         else

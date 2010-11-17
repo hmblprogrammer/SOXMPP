@@ -18,9 +18,9 @@ class SOChatFeed
   end
   
   def get_new_messages_for_rooms(room_list)
-    puts "DEBUG: get_new_messages_for_rooms(#{room_list}) called"
+    #puts "DEBUG: get_new_messages_for_rooms(#{room_list}) called"
     room_ids = room_list.collect {|r| r.room_id}
-    puts "DEBUG: room_ids: #{room_ids}"
+    #puts "DEBUG: room_ids: #{room_ids}"
     get_new_messages_for_room_ids(room_ids)
   end
   
@@ -51,7 +51,7 @@ class SOChatFeed
         if data[rid]["e"]
           #puts "DEBUG: Found events for room #{rid}"
           data[rid]["e"].each do |e|
-            puts "DEBUG: found an event: #{e.inspect}"
+            #puts "DEBUG: found an event: #{e.inspect}"
             case e["event_type"]
               when 1
                 event = SOChatMessage.new(room,e['user_name'])
@@ -84,20 +84,20 @@ class SOChatFeed
   
   def get_new_messages_for_room_ids(rooms)
      
-    puts "DEBUG: get_new_messages_for_room_ids(#{rooms}) called"
+    #puts "DEBUG: get_new_messages_for_room_ids(#{rooms}) called"
     
     request = {}
     rooms.each do |r|
       request["r"+"#{r}"] = @last_update
     end
     
-    puts "DEBUG: sending request: #{request.inspect}"
+    #puts "DEBUG: sending request: #{request.inspect}"
     
     
     res = Net::HTTP.post_form(URI.parse("http://#{@server}/events"),request)
     data = JSON.parse(res.body)
     
-    puts "DEBUG: received data: #{data.inspect}"
+    #puts "DEBUG: received data: #{data.inspect}"
     
     messages = {}
     

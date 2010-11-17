@@ -5,6 +5,7 @@
 class SOChatUser
   attr_reader :user_id
   attr_reader :user_name
+  attr_accessor :gravitar_url
   
   def initialize(user_id, user_name)
     @user_id = user_id

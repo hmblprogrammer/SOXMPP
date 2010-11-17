@@ -10,6 +10,7 @@
 
 class SOXMPP_ChatUser < SOXMPP_Object
   attr_reader :sochatuser
+  attr_accessor :fullname
   
   def initialize(room, iname, jid, sochatuser)
     super(room)
@@ -21,5 +22,19 @@ class SOXMPP_ChatUser < SOXMPP_Object
     #attributes['presence'] = {:show => 'chat',  :status => ''}
     
     @sochatuser = sochatuser
+    
+    @fullname = @sochatuser.user_name
+  end
+  
+  def set_vcard_info
+    Thread.new do
+      @vcard = Jabber::Vcard::IqVcard.new
+      vcard['FN'] = @fullname
+      vcard['NICKNAME'] = @sochatuser.user_name
+      
+      gravitar = Net::HTTP.get(Uri.parse(@sochatuser.gravitar_url))
+      
+      
+    end
   end
 end

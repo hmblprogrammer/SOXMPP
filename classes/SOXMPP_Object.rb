@@ -51,10 +51,12 @@ class SOXMPP_Object < REXML::Element
       xe = Jabber::Presence.import(pres)
     }
     xe = Jabber::Presence.new if xe.nil?
-    if self.kind_of?(SOXMPP_ChatUser)
+    if self.kind_of?(SOXMPP_LoggedInUser)
+      xe.add(Jabber::MUC::XMUCUser.new).add(Jabber::MUC::XMUCUserItem.new(:owner, :moderator))
+    elsif self.kind_of?(SOXMPP_ChatUser)
       xe.add(Jabber::MUC::XMUCUser.new).add(Jabber::MUC::XMUCUserItem.new(:none, :participant))
     else
-      xe.add(Jabber::MUC::XMUCUser.new).add(Jabber::MUC::XMUCUserItem.new(:owner, :moderator))
+      xe.add(Jabber::MUC::XMUCUser.new).add(Jabber::MUC::XMUCUserItem.new(:none, :moderator))
     end
     xe
   end

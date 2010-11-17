@@ -33,7 +33,7 @@ class SOXMPP_Room < REXML::Element
   end
   
   def send_message(fromresource, text, subject=nil, html=nil)
-    puts "Sending message to room #{@name}: #{text}"
+    puts "DEBUG: Sending message to room #{@name}: #{text}"
         
     each_element('soxmppobject') { |t|
       # Broadcast message to room
@@ -43,7 +43,7 @@ class SOXMPP_Room < REXML::Element
         msg.subject = subject unless subject.nil?
         
         unless html.nil?
-          puts "This message contains HTML."
+          #puts "DEBUG: This message contains HTML."
           # Create the html part
           h = REXML::Element::new("html")
           h.add_namespace('http://jabber.org/protocol/xhtml-im')
@@ -59,12 +59,12 @@ class SOXMPP_Room < REXML::Element
           b.add(txt)
           h.add(b)
           
-          puts "Adding the HTML to the message"
+          #puts "DEBUG: Adding the HTML to the message"
           # Add the html element to the message
           msg.add_element(h)
         end
         
-        puts "Sending message to user #{t.jid}: #{msg}"
+        #puts "DEBUG: Sending message to user #{t.jid}: #{msg}"
         
         send(fromresource, msg)
       end
@@ -72,14 +72,14 @@ class SOXMPP_Room < REXML::Element
   end
   
   def send_message_to_user(user,fromresource, text, subject=nil, html=nil)
-    puts "Sending message from room #{@name} to #{user}: #{text}"
+    puts "DEBUG: Sending message from room #{@name} to #{user}: #{text}"
 
     msg = Jabber::Message.new(user, text)
     msg.type = :groupchat
     msg.subject = subject unless subject.nil?
     
     unless html.nil?
-      puts "This message contains HTML."
+      #puts "DEBUG: This message contains HTML."
       # Create the html part
       h = REXML::Element::new("html")
       h.add_namespace('http://jabber.org/protocol/xhtml-im')
@@ -95,12 +95,12 @@ class SOXMPP_Room < REXML::Element
       b.add(txt)
       h.add(b)
       
-      puts "Adding the HTML to the message"
+      #puts "DEBUG: Adding the HTML to the message"
       # Add the html element to the message
       msg.add_element(h)
     end
     
-    puts "Sending message to user #{user}: #{msg}"
+    #puts "DEBUG: Sending message to user #{user}: #{msg}"
     
     send(fromresource, msg)
   end
@@ -197,16 +197,20 @@ class SOXMPP_Room < REXML::Element
   end
 
   def handle_message(msg)
-    puts "Room \"#{@name}\" handling message: #{msg}"
-    puts "message: from #{msg.from} type #{msg.type} to #{msg.to}: #{msg.body.inspect}"
+    puts "DEBUG: Room \"#{@name}\" handling message: #{msg}"
+    puts "DEBUG: message: from #{msg.from} type #{msg.type} to #{msg.to}: #{msg.body.inspect}"
     
     event = nil
     
-    if msg.body =~ /\/.*/
-      #puts "DEBUG: Creating a new SOXMPPUserCommand"
+    if msg.body =~ /^\/me.*/
+      event = SOXMPPMessageToRoom.new(msg)
+    elsif msg.body =~ /^\/reddot.*/
+      eventr = SOChatMessage.new(self,@name,'A Red Dot')
+      eventr.encoded_body = '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg==" alt="Red dot" />'
+      handle_event eventr
+    elsif msg.body =~ /^\/.*/
       event = SOXMPPUserCommand.new(msg)
     else
-      #puts "DEBUG: Creating a new SOXMPPMessageToRoom"
       event = SOXMPPMessageToRoom.new(msg)
     end
     
@@ -233,12 +237,12 @@ class SOXMPP_Room < REXML::Element
           send_message_to_user(the_event.from, @name, 'Error: You must be logged in to post messages.')
         end
       when SOChatUserJoinRoom
-        puts "DEBUG: #{self} handling SOChatUserJoinRoom event #{the_event}"
+        #puts "DEBUG: #{self} handling SOChatUserJoinRoom event #{the_event}"
         user = self.add(SOXMPP_ChatUser.new(self, the_event.user.user_name, nil, the_event.user))
-        puts "DEBUG: added the user"
+        #puts "DEBUG: added the user"
         #add(user)
         broadcast_enter(user)
-        puts "DEBUG: added the user to the room"
+        #puts "DEBUG: added the user to the room"
     end
   end
   
@@ -246,19 +250,19 @@ class SOXMPP_Room < REXML::Element
     each_element('soxmppobject') { |t|
       # Broadcast availability presence to enterer
       unless t.presence.nil?
-        puts "Broadcast availability presence to enterer for #{t}"
+        #puts "Broadcast availability presence to enterer for #{t}"
         pres = Jabber::Presence.import(t.presence)
         pres.to = user.jid
-        puts "  send(#{t.iname}, #{pres})"
+        #puts "  send(#{t.iname}, #{pres})"
         send(t.iname, pres)
       end
 	
       # Broadcast availability presence to all who are here
       unless user.presence.nil?
-        puts "Broadcast availability presence to all who are here"
+        #puts "Broadcast availability presence to all who are here"
         pres = Jabber::Presence.import(user.presence)
         pres.to = t.jid
-        puts "  send(#{t.iname}, #{pres})"
+        #puts "  send(#{t.iname}, #{pres})"
         send(user.iname, pres)
       end
     }
@@ -273,14 +277,14 @@ class SOXMPP_Room < REXML::Element
   
   def broadcast_enter(user)
     puts "DEBUG: broadcast_enter called for #{user}"
-    puts "user presence is: #{user.presence}"
+    #puts "user presence is: #{user.presence}"
     each_element('soxmppobject') { |t|
       # Broadcast availability presence to all who are here
       unless user.presence.nil?
-        puts "Broadcast availability presence of #{user} to all who are here"
+        #puts "Broadcast availability presence of #{user} to all who are here"
         pres = Jabber::Presence.import(user.presence)
         pres.to = t.jid
-        puts "  send(#{t.iname}, #{pres})"
+        #puts "  send(#{t.iname}, #{pres})"
         send(user.iname, pres)
       end
     }

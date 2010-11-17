@@ -82,8 +82,13 @@ end
 bridge = SOChat_XMPP_Bridge.new(Jabber::JID.new(ARGV[0]),ARGV[1], ARGV[2])
 
 # Add some rooms:
-bridge.add_room('xmpp','chat.meta.stackoverflow.com',241);
-bridge.add_room('the_tavern','chat.meta.stackoverflow.com',89);
+bridge.add_room('xmpp','chat.meta.stackoverflow.com',241)
+bridge.add_room('the_tavern','chat.meta.stackoverflow.com',89)
+bridge.add_room('sandbox','chat.meta.stackoverflow.com',38)
+bridge.add_room('chat_feedback','chat.meta.stackoverflow.com',77)
+bridge.add_room('regulator_headquarters','chat.meta.stackoverflow.com',227)
+bridge.add_room('tunes','chat.meta.stackoverflow.com',251)
+bridge.add_room('the_one','chat.meta.stackoverflow.com',1)
 
 # And awwwwway we go!
 Thread.stop

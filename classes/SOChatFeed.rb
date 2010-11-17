@@ -64,12 +64,12 @@ class SOChatFeed
                 event.server = @server
                 events.push event
               when 3
-                user = SOChatUser.new(e['user_id'], e['user_name'])
+                user = room.bridge.get_so_chat_user(e['user_id'], e['user_name'])
                 event = SOChatUserJoinRoom.new(room,user)
                 event.server = @server
                 events.push event
               when 4
-                user = SOChatUser.new(e['user_id'], e['user_name'])
+                user = room.bridge.get_so_chat_user(e['user_id'], e['user_name'])
                 event = SOChatUserLeaveRoom.new(room,user)
                 event.server = @server
                 events.push event

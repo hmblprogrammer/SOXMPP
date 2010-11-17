@@ -12,10 +12,10 @@ class SOXMPP_ChatUser < SOXMPP_Object
   attr_reader :sochatuser
   attr_accessor :fullname
   
-  def initialize(room, iname, jid, sochatuser)
-    super(room)
-    attributes['name'] = iname
-    attributes['jid'] = jid.to_s
+  def initialize(sochatuser)
+    super()
+    attributes['name'] = sochatuser.user_name
+    attributes['jid'] = nil
     
     #puts "DEBUG: #{attributes.inspect}"
     #
@@ -23,7 +23,7 @@ class SOXMPP_ChatUser < SOXMPP_Object
     
     @sochatuser = sochatuser
     
-    @fullname = @sochatuser.user_name
+    @fullname = sochatuser.user_name
   end
   
   def set_vcard_info

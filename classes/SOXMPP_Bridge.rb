@@ -13,6 +13,9 @@ class SOChat_XMPP_Bridge
   def initialize(jid, secret, addr, port=5275)
     # Initialize private variables
     @rooms_by_server = {}
+    @so_chat_users = {}
+    @soxmpp_chat_users = {}
+    @soxmpp_logged_in_chat_users = {}
     
     # Create our component. This does the bulk of the work, it connects to the
     # XMPP server and is the vehiclue through which we provide all functionality
@@ -94,6 +97,30 @@ class SOChat_XMPP_Bridge
         end
       end
     end
+  end
+  
+  def get_so_chat_user(user_id, user_name)
+    if !@so_chat_users[user_id].nil?
+      @so_chat_users[user_id] = SOChatUser.new(user_id, user_name)
+    end
+    
+    @so_chat_users[user_id]
+  end
+  
+  def get_soxmpp_chat_user(sochatuser)
+    if !@soxmpp_chat_users[sochatuser.user_id].nil?
+      @soxmpp_chat_users[sochatuser.user_id] = SOXMPP_ChatUser.new(sochatuser)
+    end
+    
+    @soxmpp_chat_users[sochatuser.user_id]
+  end
+  
+  def get_soxmpp_logged_in_user(iname, jid)
+    if !@soxmpp_logged_in_chat_users[jid].nil?
+      @soxmpp_logged_in_chat_users[jid] = SOXMPP_LoggedInUser.new(iname, jid)
+    end
+    
+    @soxmpp_logged_in_chat_users[jid]
   end
   
   def poll

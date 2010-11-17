@@ -11,7 +11,7 @@
 
 
 class SOXMPP_Object < REXML::Element
-  def initialize(room)
+  def initialize()
     super('soxmppobject')
   end
 

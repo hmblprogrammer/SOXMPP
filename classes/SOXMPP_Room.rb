@@ -175,7 +175,7 @@ class SOXMPP_Room < REXML::Element
       user.presence = pres
       #move_thing(player, attributes['start'])
       add_to_room(user)
-      user.send_message('Help!', 'Send "/help" or "/?" to get a list of available commands any time.')
+      user.send_message(self, 'Help!', 'Send "/help" or "/?" to get a list of available commands any time.')
     # Or broadcast updated presence
     else
       print "User is an existing user, updating presence.\n"
@@ -268,11 +268,11 @@ class SOXMPP_Room < REXML::Element
       end
     }
 
-    user.send_message(nil, " ")
+    user.send_message(self, nil, " ")
     subject = @name
     subject[0] = subject[0,1].upcase
-    user.send_message(nil, "Entering #{@name}", subject)
-    user.send_message(nil, " ")
+    user.send_message(self, nil, "Entering #{@name}", subject)
+    user.send_message(self, nil, " ")
     user.join(self)
   end
   

@@ -16,7 +16,8 @@ class SOXMPP_LoggedInUser < SOXMPP_ChatUser
   attr_accessor :cookie
   
   def initialize(iname, jid)
-    super(iname, jid, SOChatUser.new(-1, iname))
+    super(SOChatUser.new(-1, iname))
+    attributes['jid'] = jid
     
     @feed = nil
     @rooms = {}
@@ -41,14 +42,14 @@ class SOXMPP_LoggedInUser < SOXMPP_ChatUser
     print "ERROR: unimplemented see()"
   end
 
-  def send_message(fromresource, text, subject=nil)
+  def send_message(room, fromresource, text, subject=nil)
     msg = Jabber::Message.new(jid, text)
     msg.type = :groupchat
     msg.subject = subject unless subject.nil?
     
     puts "Sending message to user #{jid}: #{msg}"
     
-    @room.send(fromresource, msg)
+    room.send(fromresource, msg)
   end
 
   def on_enter(thing, from)

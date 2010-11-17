@@ -100,7 +100,7 @@ class SOChat_XMPP_Bridge
   end
   
   def get_so_chat_user(user_id, user_name)
-    if !@so_chat_users[user_id].nil?
+    if @so_chat_users[user_id].nil?
       @so_chat_users[user_id] = SOChatUser.new(user_id, user_name)
     end
     
@@ -108,7 +108,7 @@ class SOChat_XMPP_Bridge
   end
   
   def get_soxmpp_chat_user(sochatuser)
-    if !@soxmpp_chat_users[sochatuser.user_id].nil?
+    if @soxmpp_chat_users[sochatuser.user_id].nil?
       @soxmpp_chat_users[sochatuser.user_id] = SOXMPP_ChatUser.new(sochatuser)
     end
     
@@ -116,7 +116,7 @@ class SOChat_XMPP_Bridge
   end
   
   def get_soxmpp_logged_in_user(iname, jid)
-    if !@soxmpp_logged_in_chat_users[jid].nil?
+    if @soxmpp_logged_in_chat_users[jid].nil?
       @soxmpp_logged_in_chat_users[jid] = SOXMPP_LoggedInUser.new(iname, jid)
     end
     
